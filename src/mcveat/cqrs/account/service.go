@@ -15,11 +15,18 @@ func (s *Service) Act(cmd Command) *UUID {
 		event := AccountOpened{initialBalance: v.InitialBalance}
 		return s.Store.Save([]Event{event})
 	case Credit:
-		account := s.Store.Find(v.Uuid)
 		event := AccountCredited{uuid: v.Uuid, amount: v.Amount}
-		update := Update{v.Uuid, []Event{event}, account.Version}
-		s.Store.Update(update)
-		return v.Uuid
+		return s.actionOnAccount(v.Uuid, event)
+	case Debit:
+		event := AccountDebited{uuid: v.Uuid, amount: v.Amount}
+		return s.actionOnAccount(v.Uuid, event)
 	}
 	return nil
+}
+
+func (s *Service) actionOnAccount(uuid *UUID, event Event) *UUID {
+	account := s.Store.Find(uuid)
+	update := Update{uuid, []Event{event}, account.Version}
+	s.Store.Update(update)
+	return uuid
 }

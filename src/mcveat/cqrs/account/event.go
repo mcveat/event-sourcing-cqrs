@@ -33,3 +33,17 @@ func (e AccountCredited) SetUUID(uuid *UUID) Event {
 	e.uuid = uuid
 	return e
 }
+
+type AccountDebited struct {
+	uuid   *UUID
+	amount int
+}
+
+func (e AccountDebited) String() string {
+	return fmt.Sprint("{AccountDebited: amount=", e.amount, "}")
+}
+
+func (e AccountDebited) SetUUID(uuid *UUID) Event {
+	e.uuid = uuid
+	return e
+}

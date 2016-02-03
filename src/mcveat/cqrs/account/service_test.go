@@ -37,3 +37,16 @@ func (s *MySuite) TestCreditAccount(c *C) {
 	c.Assert(history.Events[1], Equals, AccountCredited{uuid: uuid, amount: 200})
 	c.Assert(history.Version, Equals, 2)
 }
+
+func (s *MySuite) TestDebitAccount(c *C) {
+	es := store.Empty()
+	as := Service{&es}
+	uuid := as.Act(OpenAccount{InitialBalance: 100})
+	as.Act(Debit{uuid, 50})
+	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+	history := es.Find(uuid)
+	c.Assert(history.Events, HasLen, 2)
+	c.Assert(history.Events[0], Equals, AccountOpened{uuid: uuid, initialBalance: 100})
+	c.Assert(history.Events[1], Equals, AccountDebited{uuid: uuid, amount: 50})
+	c.Assert(history.Version, Equals, 2)
+}

@@ -12,3 +12,8 @@ type Credit struct {
 	Uuid   *UUID
 	Amount int
 }
+
+type Debit struct {
+	Uuid   *UUID
+	Amount int
+}
