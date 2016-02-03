@@ -9,3 +9,17 @@ type CreateTransfer struct {
 	To     *UUID
 	Amount int
 }
+
+type Debite struct {
+	Uuid   *UUID
+	From   *UUID
+	To     *UUID
+	Amount int
+}
+
+type Complete struct {
+	Uuid   *UUID
+	From   *UUID
+	To     *UUID
+	Amount int
+}
