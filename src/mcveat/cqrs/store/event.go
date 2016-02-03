@@ -8,6 +8,11 @@ type Event interface {
 	SetUUID(uuid *UUID) Event
 }
 
+type History struct {
+	events  []Event
+	version int
+}
+
 type GenericEvent struct {
 	uuid  *UUID
 	value int

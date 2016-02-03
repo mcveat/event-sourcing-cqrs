@@ -2,6 +2,7 @@ package store
 
 import (
 	. "github.com/go-check/check"
+	. "github.com/nu7hatch/gouuid"
 	"testing"
 )
 
@@ -35,4 +36,20 @@ func (s *MySuite) TestSaveEventsInLog(c *C) {
 	c.Assert(log[1], Equals, GenericEvent{uuid: firstUuid, value: 2})
 	c.Assert(log[2], Equals, GenericEvent{uuid: secondUuid, value: 3})
 	c.Assert(log[3], Equals, GenericEvent{uuid: secondUuid, value: 4})
+}
+
+func (s *MySuite) TestFindMissing(c *C) {
+	es := Empty()
+	randomUUID, _ := NewV4()
+	history := es.Find(randomUUID)
+	c.Assert(history.events, HasLen, 0)
+	c.Assert(history.version, Equals, 0)
+}
+
+func (s *MySuite) TestFind(c *C) {
+	es := Empty()
+	uuid := es.Save([]Event{GenericEvent{value: 42}})
+	history := es.Find(uuid)
+	c.Assert(history.events, HasLen, 1)
+	c.Assert(history.version, Equals, 1)
 }

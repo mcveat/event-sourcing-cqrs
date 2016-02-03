@@ -25,3 +25,11 @@ func (es *EventStore) Save(events []Event) *UUID {
 	es.log = append(es.log, events...)
 	return uuid
 }
+
+func (es *EventStore) Find(uuid *UUID) History {
+	events, ok := es.store[(*uuid)]
+	if !ok {
+		events = make([]Event, 0)
+	}
+	return History{events, len(events)}
+}
