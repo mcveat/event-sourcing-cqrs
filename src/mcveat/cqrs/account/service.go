@@ -6,14 +6,18 @@ import (
 )
 
 type Service struct {
-	Store *EventStore
+	store *EventStore
+}
+
+func NewService(es *EventStore) Service {
+	return Service{es}
 }
 
 func (s *Service) Act(cmd Command) *UUID {
 	switch v := cmd.(type) {
 	case OpenAccount:
 		event := AccountOpened{initialBalance: v.InitialBalance}
-		return s.Store.Save([]Event{event})
+		return s.store.Save([]Event{event})
 	case Credit:
 		event := AccountCredited{v.Uuid, v.Amount}
 		return s.actionOnAccount(v.Uuid, event)
@@ -31,8 +35,8 @@ func (s *Service) Act(cmd Command) *UUID {
 }
 
 func (s *Service) actionOnAccount(uuid *UUID, event Event) *UUID {
-	account := s.Store.Find(uuid)
+	account := s.store.Find(uuid)
 	update := Update{uuid, []Event{event}, account.Version}
-	s.Store.Update(update)
+	s.store.Update(update)
 	return uuid
 }
