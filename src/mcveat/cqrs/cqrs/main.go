@@ -7,6 +7,6 @@ import (
 
 func main() {
 	es := store.Empty()
-	es.Save(1)
+	es.Save([]store.Event{store.GenericEvent{}})
 	fmt.Println(es)
 }

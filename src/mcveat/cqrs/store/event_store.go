@@ -4,17 +4,20 @@ import (
 	. "github.com/nu7hatch/gouuid"
 )
 
-type EventStore map[UUID]interface{}
+type EventStore map[UUID][]Event
 
 func Empty() EventStore {
-	return make(map[UUID]interface{})
+	return make(map[UUID][]Event)
 }
 
-func (es *EventStore) Save(event interface{}) *UUID {
+func (es *EventStore) Save(events []Event) *UUID {
 	uuid, err := NewV4()
 	if err != nil {
 		panic(err)
 	}
-	(*es)[(*uuid)] = event
+	for i, e := range events {
+		events[i] = e.SetUUID(uuid)
+	}
+	(*es)[(*uuid)] = events
 	return uuid
 }

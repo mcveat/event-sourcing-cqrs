@@ -13,10 +13,13 @@ type MySuite struct{}
 
 var _ = Suite(&MySuite{})
 
-func (s *MySuite) TestSaveEvent(c *C) {
+func (s *MySuite) TestSaveEvents(c *C) {
 	es := Empty()
-	uuid := es.Save(1)
+	uuid := es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: -1}})
 	c.Assert(uuid, NotNil)
 	c.Assert(es, HasLen, 1)
-	c.Assert(es[(*uuid)], Equals, 1)
+	events := es[(*uuid)]
+	c.Assert(events, HasLen, 2)
+	c.Assert(events[0], Equals, GenericEvent{uuid: uuid, value: 42})
+	c.Assert(events[1], Equals, GenericEvent{uuid: uuid, value: -1})
 }
