@@ -1,0 +1,4 @@
+[submodule "vendor/src/github.com/go-check/check"]
+	path = vendor/src/github.com/go-check/check
+	url = git@github.com:go-check/check.git
+	branch = v1
