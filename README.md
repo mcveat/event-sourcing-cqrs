@@ -16,8 +16,15 @@ Required:
 
 ```
     git clone git@github.com:mcveat/event-sourcing-cqrs.git
+    cd event-sourcing-cqrs
     git submodule init
     git submodule update
     gb build all
     ./bin/cqrs
+```
+
+To test:
+
+```
+    gb test
 ```
