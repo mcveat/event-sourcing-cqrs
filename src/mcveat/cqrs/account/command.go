@@ -17,3 +17,17 @@ type Debit struct {
 	Uuid   *UUID
 	Amount int
 }
+
+type CreditOnTransfer struct {
+	Transaction *UUID
+	Amount      int
+	From        *UUID
+	To          *UUID
+}
+
+type DebitOnTransfer struct {
+	Transaction *UUID
+	Amount      int
+	From        *UUID
+	To          *UUID
+}

@@ -47,3 +47,35 @@ func (e AccountDebited) SetUUID(uuid *UUID) Event {
 	e.uuid = uuid
 	return e
 }
+
+type AccountCreditedOnTransfer struct {
+	uuid        *UUID
+	transaction *UUID
+	amount      int
+	from        *UUID
+}
+
+func (e AccountCreditedOnTransfer) String() string {
+	return fmt.Sprint("{AccountCreditedOnTransfer: amount=", e.amount, ", from=", e.from, "}")
+}
+
+func (e AccountCreditedOnTransfer) SetUUID(uuid *UUID) Event {
+	e.uuid = uuid
+	return e
+}
+
+type AccountDebitedOnTransfer struct {
+	uuid        *UUID
+	transaction *UUID
+	amount      int
+	to          *UUID
+}
+
+func (e AccountDebitedOnTransfer) String() string {
+	return fmt.Sprint("{AccountDebitedOnTransfer: amount=", e.amount, " to=", e.to, "}")
+}
+
+func (e AccountDebitedOnTransfer) SetUUID(uuid *UUID) Event {
+	e.uuid = uuid
+	return e
+}
