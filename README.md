@@ -14,8 +14,10 @@ Required:
 * go ver. 1.5.x
 * gb https://github.com/constabulary/gb
 
+```
     git clone git@github.com:mcveat/event-sourcing-cqrs.git
     git submodule init
     git submodule update
     gb build all
     ./bin/cqrs
+```
