@@ -34,15 +34,15 @@ func (es *EventStore) Find(uuid *UUID) History {
 }
 
 func (es *EventStore) Update(update Update) error {
-	stored, ok := es.store[(*update.uuid)]
+	stored, ok := es.store[(*update.Uuid)]
 	if !ok {
 		return fmt.Errorf("Called update on entity that does not exists: %g", update)
 	}
-	if len(stored) != update.version {
+	if len(stored) != update.Version {
 		return fmt.Errorf("Optimistic lock failed on update: %g", update)
 	}
-	eventsWithParent := addUUID(update.uuid, update.events)
-	es.store[(*update.uuid)] = append(stored, eventsWithParent...)
+	eventsWithParent := addUUID(update.Uuid, update.Events)
+	es.store[(*update.Uuid)] = append(stored, eventsWithParent...)
 	es.log = append(es.log, eventsWithParent...)
 	return nil
 }

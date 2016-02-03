@@ -10,6 +10,6 @@ func main() {
 	es := store.Empty()
 	as := account.Service{&es}
 	firstAccount := as.Act(account.OpenAccount{InitialBalance: 100})
-	fmt.Println(firstAccount)
+	as.Act(account.Credit{Uuid: firstAccount, Amount: 300})
 	fmt.Println(es)
 }

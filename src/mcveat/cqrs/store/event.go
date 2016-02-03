@@ -13,9 +13,9 @@ type History struct {
 }
 
 type Update struct {
-	uuid    *UUID
-	events  []Event
-	version int
+	Uuid    *UUID
+	Events  []Event
+	Version int
 }
 
 type Page struct {
