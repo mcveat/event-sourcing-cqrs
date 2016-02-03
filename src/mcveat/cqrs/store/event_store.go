@@ -69,6 +69,10 @@ func (es *EventStore) Events(offset int, batchSize int) Page {
 	return Page{offset + batchSize, result}
 }
 
+func (es EventStore) String() string {
+	return fmt.Sprint("{EventStore store=", es.store, ", log=", es.log, "}")
+}
+
 func addUUID(uuid *UUID, events []Event) []Event {
 	result := make([]Event, 0, len(events))
 	for _, e := range events {

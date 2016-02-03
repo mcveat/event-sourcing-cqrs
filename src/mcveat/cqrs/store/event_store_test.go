@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	. "github.com/go-check/check"
 	. "github.com/nu7hatch/gouuid"
 	"testing"
@@ -13,6 +14,20 @@ func Test(t *testing.T) {
 type MySuite struct{}
 
 var _ = Suite(&MySuite{})
+
+type GenericEvent struct {
+	uuid  *UUID
+	value int
+}
+
+func (e GenericEvent) SetUUID(uuid *UUID) Event {
+	e.uuid = uuid
+	return e
+}
+
+func (e GenericEvent) String() string {
+	return fmt.Sprint("{GenericEvent: value=%g}", e.value)
+}
 
 func (s *MySuite) TestSaveEventsInStore(c *C) {
 	es := Empty()
@@ -42,16 +57,16 @@ func (s *MySuite) TestFindMissing(c *C) {
 	es := Empty()
 	randomUUID, _ := NewV4()
 	history := es.Find(randomUUID)
-	c.Assert(history.events, HasLen, 0)
-	c.Assert(history.version, Equals, 0)
+	c.Assert(history.Events, HasLen, 0)
+	c.Assert(history.Version, Equals, 0)
 }
 
 func (s *MySuite) TestFind(c *C) {
 	es := Empty()
 	uuid := es.Save([]Event{GenericEvent{value: 42}})
 	history := es.Find(uuid)
-	c.Assert(history.events, HasLen, 1)
-	c.Assert(history.version, Equals, 1)
+	c.Assert(history.Events, HasLen, 1)
+	c.Assert(history.Version, Equals, 1)
 }
 
 func (s *MySuite) TestUpdateNotExisting(c *C) {
@@ -83,34 +98,34 @@ func (s *MySuite) TestUpdate(c *C) {
 func (s *MySuite) TestEventsOnEmptySet(c *C) {
 	es := Empty()
 	page := es.Events(0, 20)
-	c.Assert(page.offset, Equals, 0)
-	c.Assert(page.events, HasLen, 0)
+	c.Assert(page.Offset, Equals, 0)
+	c.Assert(page.Events, HasLen, 0)
 }
 
 func (s *MySuite) TestEventsBadOffset(c *C) {
 	es := storeWithEvents(50)
 	page := es.Events(-5, 20)
-	c.Assert(page.offset, Equals, 20)
+	c.Assert(page.Offset, Equals, 20)
 }
 
 func (s *MySuite) TestEventsBadBatchSize(c *C) {
 	es := storeWithEvents(50)
 	page := es.Events(0, -20)
-	c.Assert(page.offset, Equals, 10)
+	c.Assert(page.Offset, Equals, 10)
 }
 
 func (s *MySuite) TestEvents(c *C) {
 	es := storeWithEvents(50)
 	page := es.Events(10, 10)
-	c.Assert(page.offset, Equals, 20)
-	c.Assert(page.events, HasLen, 10)
+	c.Assert(page.Offset, Equals, 20)
+	c.Assert(page.Events, HasLen, 10)
 }
 
 func (s *MySuite) TestEventsOnBoundary(c *C) {
 	es := storeWithEvents(15)
 	page := es.Events(10, 10)
-	c.Assert(page.offset, Equals, 20)
-	c.Assert(page.events, HasLen, 5)
+	c.Assert(page.Offset, Equals, 20)
+	c.Assert(page.Events, HasLen, 5)
 }
 
 func storeWithEvents(n int) EventStore {
