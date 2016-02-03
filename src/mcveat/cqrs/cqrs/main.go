@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"mcveat/cqrs/store"
+)
 
 func main() {
-    fmt.Println("Hello world")
+	es := store.Empty()
+	es.Save(1)
+	fmt.Println(es)
 }

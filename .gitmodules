@@ -2,3 +2,6 @@
 	path = vendor/src/github.com/go-check/check
 	url = git@github.com:go-check/check.git
 	branch = v1
+[submodule "vendor/src/github.com/nu7hatch/gouuid"]
+	path = vendor/src/github.com/nu7hatch/gouuid
+	url = git@github.com:nu7hatch/gouuid.git
