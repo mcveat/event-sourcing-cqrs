@@ -13,6 +13,17 @@ type History struct {
 	version int
 }
 
+type Update struct {
+	uuid    *UUID
+	events  []Event
+	version int
+}
+
+type Page struct {
+	offset int
+	events []Event
+}
+
 type GenericEvent struct {
 	uuid  *UUID
 	value int

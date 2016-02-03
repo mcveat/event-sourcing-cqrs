@@ -53,3 +53,70 @@ func (s *MySuite) TestFind(c *C) {
 	c.Assert(history.events, HasLen, 1)
 	c.Assert(history.version, Equals, 1)
 }
+
+func (s *MySuite) TestUpdateNotExisting(c *C) {
+	es := Empty()
+	randomUUID, _ := NewV4()
+	update := Update{randomUUID, []Event{}, 1}
+	err := es.Update(update)
+	c.Assert(err, ErrorMatches, "Called update on entity that does not exists.*")
+}
+
+func (s *MySuite) TestUpdateOptimisticLockFailed(c *C) {
+	es := Empty()
+	uuid := es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
+	update := Update{uuid, []Event{}, 1}
+	err := es.Update(update)
+	c.Assert(err, ErrorMatches, "Optimistic lock failed on update.*")
+}
+
+func (s *MySuite) TestUpdate(c *C) {
+	es := Empty()
+	uuid := es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
+	update := Update{uuid, []Event{GenericEvent{value: 44}}, 2}
+	err := es.Update(update)
+	c.Assert(err, IsNil)
+	c.Assert(es.store[(*uuid)], HasLen, 3)
+	c.Assert(es.log, HasLen, 3)
+}
+
+func (s *MySuite) TestEventsOnEmptySet(c *C) {
+	es := Empty()
+	page := es.Events(0, 20)
+	c.Assert(page.offset, Equals, 0)
+	c.Assert(page.events, HasLen, 0)
+}
+
+func (s *MySuite) TestEventsBadOffset(c *C) {
+	es := storeWithEvents(50)
+	page := es.Events(-5, 20)
+	c.Assert(page.offset, Equals, 20)
+}
+
+func (s *MySuite) TestEventsBadBatchSize(c *C) {
+	es := storeWithEvents(50)
+	page := es.Events(0, -20)
+	c.Assert(page.offset, Equals, 10)
+}
+
+func (s *MySuite) TestEvents(c *C) {
+	es := storeWithEvents(50)
+	page := es.Events(10, 10)
+	c.Assert(page.offset, Equals, 20)
+	c.Assert(page.events, HasLen, 10)
+}
+
+func (s *MySuite) TestEventsOnBoundary(c *C) {
+	es := storeWithEvents(15)
+	page := es.Events(10, 10)
+	c.Assert(page.offset, Equals, 20)
+	c.Assert(page.events, HasLen, 5)
+}
+
+func storeWithEvents(n int) EventStore {
+	es := Empty()
+	for i := 0; i < n; i++ {
+		es.Save([]Event{GenericEvent{value: i}})
+	}
+	return es
+}
