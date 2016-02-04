@@ -124,7 +124,7 @@ func (s *MySuite) TestEvents(c *C) {
 func (s *MySuite) TestEventsOnBoundary(c *C) {
 	es := storeWithEvents(15)
 	page := es.Events(10, 10)
-	c.Assert(page.Offset, Equals, 20)
+	c.Assert(page.Offset, Equals, 15)
 	c.Assert(page.Events, HasLen, 5)
 }
 

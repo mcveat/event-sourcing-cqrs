@@ -3,6 +3,8 @@ package account
 import (
 	. "github.com/nu7hatch/gouuid"
 	. "mcveat/cqrs/store"
+	"mcveat/cqrs/transfer"
+	"time"
 )
 
 type Service struct {
@@ -13,8 +15,8 @@ func NewService(es *EventStore) Service {
 	return Service{es}
 }
 
-func (s *Service) Act(cmd Command) *UUID {
-	switch v := cmd.(type) {
+func (s *Service) Act(c Command) *UUID {
+	switch v := c.(type) {
 	case OpenAccount:
 		event := AccountOpened{initialBalance: v.InitialBalance}
 		return s.store.Save([]Event{event})
@@ -39,4 +41,31 @@ func (s *Service) actionOnAccount(uuid *UUID, event Event) *UUID {
 	update := Update{uuid, []Event{event}, account.Version}
 	s.store.Update(update)
 	return uuid
+}
+
+func (s *Service) StartListener() {
+	go s.listen()
+}
+
+func (s *Service) listen() {
+	offset := 0
+	for {
+		time.Sleep(100 * time.Millisecond)
+		page := s.store.Events(offset, 5)
+		go s.handleEvents(page.Events)
+		offset = page.Offset
+	}
+}
+
+func (s *Service) handleEvents(events []Event) {
+	for _, event := range events {
+		s.handleEvent(event)
+	}
+}
+
+func (s *Service) handleEvent(e Event) {
+	switch event := e.(type) {
+	case transfer.TransferCreated:
+		s.Act(DebitOnTransfer{event.Uuid, event.Amount, event.From, event.To})
+	}
 }

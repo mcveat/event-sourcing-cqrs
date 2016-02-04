@@ -16,7 +16,7 @@ func NewService(es *EventStore) Service {
 func (s *Service) Act(cmd Command) *UUID {
 	switch v := cmd.(type) {
 	case CreateTransfer:
-		event := TransferCreated{from: v.From, to: v.To, amount: v.Amount}
+		event := TransferCreated{From: v.From, To: v.To, Amount: v.Amount}
 		return s.store.Save([]Event{event})
 	case Debite:
 		event := TransferDebited{v.Uuid, v.From, v.To, v.Amount}

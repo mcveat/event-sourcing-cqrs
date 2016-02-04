@@ -56,7 +56,7 @@ func (es *EventStore) Events(offset int, batchSize int) Page {
 		offset = 0
 	}
 	if offset >= noOfEvents {
-		return Page{0, make([]Event, 0)}
+		return Page{offset, make([]Event, 0)}
 	}
 	if batchSize <= 0 {
 		batchSize = 10
@@ -66,7 +66,7 @@ func (es *EventStore) Events(offset int, batchSize int) Page {
 		max = noOfEvents
 	}
 	result := es.log[offset:max]
-	return Page{offset + batchSize, result}
+	return Page{max, result}
 }
 
 func (es EventStore) String() string {

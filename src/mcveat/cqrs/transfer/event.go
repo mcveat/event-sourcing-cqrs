@@ -7,18 +7,18 @@ import (
 )
 
 type TransferCreated struct {
-	uuid   *UUID
-	from   *UUID
-	to     *UUID
-	amount int
+	Uuid   *UUID
+	From   *UUID
+	To     *UUID
+	Amount int
 }
 
 func (e TransferCreated) String() string {
-	return fmt.Sprint("{TransferCreated: from=", e.from, " to=", e.to, " amount=", e.amount, "}")
+	return fmt.Sprint("{TransferCreated: from=", e.From, " to=", e.To, " amount=", e.Amount, "}")
 }
 
 func (e TransferCreated) SetUUID(uuid *UUID) Event {
-	e.uuid = uuid
+	e.Uuid = uuid
 	return e
 }
 
