@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	. "github.com/nu7hatch/gouuid"
+	. "mcveat/cqrs/event"
 )
 
 type EventStore struct {

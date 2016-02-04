@@ -4,6 +4,7 @@ import (
 	"fmt"
 	. "github.com/go-check/check"
 	. "github.com/nu7hatch/gouuid"
+	. "mcveat/cqrs/event"
 	"testing"
 )
 

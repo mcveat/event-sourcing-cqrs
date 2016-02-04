@@ -1,6 +1,7 @@
 package listener
 
 import (
+	. "mcveat/cqrs/event"
 	. "mcveat/cqrs/store"
 	"time"
 )

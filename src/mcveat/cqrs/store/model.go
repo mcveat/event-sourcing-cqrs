@@ -1,11 +1,9 @@
 package store
 
-import . "github.com/nu7hatch/gouuid"
-
-type Event interface {
-	SetUUID(uuid *UUID) Event
-	String() string
-}
+import (
+	. "github.com/nu7hatch/gouuid"
+	. "mcveat/cqrs/event"
+)
 
 type History struct {
 	Events  []Event

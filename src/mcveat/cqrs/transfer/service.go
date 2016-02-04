@@ -2,6 +2,8 @@ package transfer
 
 import (
 	. "github.com/nu7hatch/gouuid"
+	. "mcveat/cqrs/event"
+	"mcveat/cqrs/listener"
 	. "mcveat/cqrs/store"
 )
 
@@ -33,4 +35,15 @@ func (s *Service) actionOnTransfer(uuid *UUID, event Event) *UUID {
 	update := Update{uuid, []Event{event}, account.Version}
 	s.store.Update(update)
 	return uuid
+}
+
+func (s *Service) StartListener() {
+	go listener.Listen(s.store, s.handleEvent)
+}
+
+func (s *Service) handleEvent(e Event) {
+	switch event := e.(type) {
+	case AccountDebitedOnTransfer:
+		s.Act(Debite{event.Transaction, event.From, event.To, event.Amount})
+	}
 }

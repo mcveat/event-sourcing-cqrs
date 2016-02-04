@@ -14,6 +14,7 @@ func main() {
 	ts := transfer.NewService(&es)
 
 	as.StartListener()
+	ts.StartListener()
 
 	firstAccount := as.Act(account.OpenAccount{InitialBalance: 100})
 	as.Act(account.Credit{Uuid: firstAccount, Amount: 300})
