@@ -53,6 +53,7 @@ type AccountCreditedOnTransfer struct {
 	transaction *UUID
 	amount      int
 	from        *UUID
+	to          *UUID
 }
 
 func (e AccountCreditedOnTransfer) String() string {
@@ -68,6 +69,7 @@ type AccountDebitedOnTransfer struct {
 	uuid        *UUID
 	transaction *UUID
 	amount      int
+	from        *UUID
 	to          *UUID
 }
 

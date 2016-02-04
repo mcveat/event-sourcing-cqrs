@@ -64,7 +64,7 @@ func (s *MySuite) TestCreditAccountOnTransfer(c *C) {
 	history := es.Find(uuid)
 	c.Assert(history.Events, HasLen, 2)
 	c.Assert(history.Events[0], Equals, AccountOpened{uuid: uuid, initialBalance: 100})
-	c.Assert(history.Events[1], Equals, AccountCreditedOnTransfer{uuid, transaction, 200, otherAccount})
+	c.Assert(history.Events[1], Equals, AccountCreditedOnTransfer{uuid, transaction, 200, otherAccount, uuid})
 	c.Assert(history.Version, Equals, 2)
 }
 
@@ -79,7 +79,7 @@ func (s *MySuite) TestDebitAccountOnTransfer(c *C) {
 	history := es.Find(uuid)
 	c.Assert(history.Events, HasLen, 2)
 	c.Assert(history.Events[0], Equals, AccountOpened{uuid: uuid, initialBalance: 100})
-	c.Assert(history.Events[1], Equals, AccountDebitedOnTransfer{uuid, transaction, 50, otherAccount})
+	c.Assert(history.Events[1], Equals, AccountDebitedOnTransfer{uuid, transaction, 50, uuid, otherAccount})
 	c.Assert(history.Version, Equals, 2)
 }
 
@@ -91,11 +91,26 @@ func (s *MySuite) TestHandleTransferCreatedEvent(c *C) {
 	transaction, _ := NewV4()
 
 	as.handleEvent(transfer.TransferCreated{transaction, thisAccount, otherAccount, 50})
-
 	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+
 	history := es.Find(thisAccount)
 	c.Assert(history.Events, HasLen, 2)
 	c.Assert(history.Events[0], Equals, AccountOpened{uuid: thisAccount, initialBalance: 100})
-	c.Assert(history.Events[1], Equals, AccountDebitedOnTransfer{thisAccount, transaction, 50, otherAccount})
-	c.Assert(history.Version, Equals, 2)
+	c.Assert(history.Events[1], Equals, AccountDebitedOnTransfer{thisAccount, transaction, 50, thisAccount, otherAccount})
+}
+
+func (s *MySuite) TestHandleAccountDebitedOnTransferEvent(c *C) {
+	es := store.Empty()
+	as := Service{&es}
+	thisAccount := as.Act(OpenAccount{InitialBalance: 100})
+	otherAccount, _ := NewV4()
+	transaction, _ := NewV4()
+
+	as.handleEvent(AccountDebitedOnTransfer{otherAccount, transaction, 50, otherAccount, thisAccount})
+	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+
+	history := es.Find(thisAccount)
+	c.Assert(history.Events, HasLen, 2)
+	c.Assert(history.Events[0], Equals, AccountOpened{uuid: thisAccount, initialBalance: 100})
+	c.Assert(history.Events[1], Equals, AccountCreditedOnTransfer{thisAccount, transaction, 50, otherAccount, thisAccount})
 }

@@ -27,10 +27,10 @@ func (s *Service) Act(c Command) *UUID {
 		event := AccountDebited{v.Uuid, v.Amount}
 		return s.actionOnAccount(v.Uuid, event)
 	case CreditOnTransfer:
-		event := AccountCreditedOnTransfer{v.To, v.Transaction, v.Amount, v.From}
+		event := AccountCreditedOnTransfer{v.To, v.Transaction, v.Amount, v.From, v.To}
 		return s.actionOnAccount(v.To, event)
 	case DebitOnTransfer:
-		event := AccountDebitedOnTransfer{v.From, v.Transaction, v.Amount, v.To}
+		event := AccountDebitedOnTransfer{v.From, v.Transaction, v.Amount, v.From, v.To}
 		return s.actionOnAccount(v.From, event)
 	}
 	return nil
@@ -67,5 +67,7 @@ func (s *Service) handleEvent(e Event) {
 	switch event := e.(type) {
 	case transfer.TransferCreated:
 		s.Act(DebitOnTransfer{event.Uuid, event.Amount, event.From, event.To})
+	case AccountDebitedOnTransfer:
+		s.Act(CreditOnTransfer{event.transaction, event.amount, event.from, event.to})
 	}
 }
