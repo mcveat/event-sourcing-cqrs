@@ -74,7 +74,7 @@ func (s *MySuite) TestUpdateNotExisting(c *C) {
 	es := Empty()
 	randomUUID, _ := NewV4()
 	update := Update{randomUUID, []Event{}, 1}
-	err := es.Update(update)
+	err := <-es.Update(update)
 	c.Assert(err, ErrorMatches, "Called update on entity that does not exists.*")
 }
 
@@ -82,7 +82,7 @@ func (s *MySuite) TestUpdateOptimisticLockFailed(c *C) {
 	es := Empty()
 	uuid := <-es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
 	update := Update{uuid, []Event{}, 1}
-	err := es.Update(update)
+	err := <-es.Update(update)
 	c.Assert(err, ErrorMatches, "Optimistic lock failed on update.*")
 }
 
@@ -90,7 +90,7 @@ func (s *MySuite) TestUpdate(c *C) {
 	es := Empty()
 	uuid := <-es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
 	update := Update{uuid, []Event{GenericEvent{value: 44}}, 2}
-	err := es.Update(update)
+	err := <-es.Update(update)
 	c.Assert(err, IsNil)
 	c.Assert(es.store[(*uuid)], HasLen, 3)
 	c.Assert(es.log, HasLen, 3)

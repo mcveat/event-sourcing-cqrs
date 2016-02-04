@@ -48,18 +48,29 @@ func (es *EventStore) find(uuid *UUID, done chan History) {
 	close(done)
 }
 
-func (es *EventStore) Update(update Update) error {
+func (es *EventStore) Update(update Update) chan error {
+	done := make(chan error)
+	go es.update(update, done)
+	return done
+}
+
+func (es *EventStore) update(update Update, done chan error) {
 	stored, ok := es.store[(*update.Uuid)]
 	if !ok {
-		return fmt.Errorf("Called update on entity that does not exists: %g", update)
+		done <- fmt.Errorf("Called update on entity that does not exists: %g", update)
+		close(done)
+		return
 	}
 	if len(stored) != update.Version {
-		return fmt.Errorf("Optimistic lock failed on update: %g", update)
+		done <- fmt.Errorf("Optimistic lock failed on update: %g", update)
+		close(done)
+		return
 	}
 	eventsWithParent := addUUID(update.Uuid, update.Events)
 	es.store[(*update.Uuid)] = append(stored, eventsWithParent...)
 	es.log = append(es.log, eventsWithParent...)
-	return nil
+	done <- nil
+  close(done)
 }
 
 func (es *EventStore) Events(offset int, batchSize int) Page {

@@ -41,7 +41,7 @@ func (s *Service) act(cmd Command, done chan *UUID) {
 func (s *Service) actionOnTransfer(uuid *UUID, event Event) *UUID {
 	account := <-s.store.Find(uuid)
 	update := Update{uuid, []Event{event}, account.Version}
-	s.store.Update(update)
+	<-s.store.Update(update)
 	return uuid
 }
 
