@@ -45,7 +45,7 @@ func (s *Service) act(c Command, done chan *UUID) {
 }
 
 func (s *Service) actionOnAccount(uuid *UUID, event Event) *UUID {
-	account := s.store.Find(uuid)
+	account := <-s.store.Find(uuid)
 	update := Update{uuid, []Event{event}, account.Version}
 	s.store.Update(update)
 	return uuid
@@ -65,6 +65,10 @@ func (s *Service) handleEvent(e Event) chan *UUID {
 	return nil
 }
 
-func (s *Service) Find(uuid *UUID) Account {
-	return Build(s.store.Find(uuid))
+func (s *Service) Find(uuid *UUID) chan Account {
+	done := make(chan Account)
+	go func() {
+		done <- Build(<-s.store.Find(uuid))
+	}()
+	return done
 }

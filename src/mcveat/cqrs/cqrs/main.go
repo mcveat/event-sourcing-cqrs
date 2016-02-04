@@ -27,11 +27,11 @@ func main() {
 
 	fmt.Println("Accounts:")
 	fmt.Println("---------")
-	fmt.Println(as.Find(firstAccount))
-	fmt.Println(as.Find(secondAccount))
+	fmt.Println(<-as.Find(firstAccount))
+	fmt.Println(<-as.Find(secondAccount))
 	fmt.Println("Transfers:")
 	fmt.Println("----------")
-	fmt.Println(ts.Find(<-transfer))
+	fmt.Println(<-ts.Find(<-transfer))
 	fmt.Println("Events:")
 	fmt.Println("-------")
 	for _, event := range es.Events(0, 100).Events {

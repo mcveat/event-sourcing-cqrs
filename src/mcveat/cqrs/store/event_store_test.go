@@ -57,7 +57,7 @@ func (s *MySuite) TestSaveEventsInLog(c *C) {
 func (s *MySuite) TestFindMissing(c *C) {
 	es := Empty()
 	randomUUID, _ := NewV4()
-	history := es.Find(randomUUID)
+	history := <-es.Find(randomUUID)
 	c.Assert(history.Events, HasLen, 0)
 	c.Assert(history.Version, Equals, 0)
 }
@@ -65,7 +65,7 @@ func (s *MySuite) TestFindMissing(c *C) {
 func (s *MySuite) TestFind(c *C) {
 	es := Empty()
 	uuid := <-es.Save([]Event{GenericEvent{value: 42}})
-	history := es.Find(uuid)
+	history := <-es.Find(uuid)
 	c.Assert(history.Events, HasLen, 1)
 	c.Assert(history.Version, Equals, 1)
 }

@@ -30,14 +30,22 @@ func (es *EventStore) save(events []Event, done chan *UUID) {
 	es.store[(*uuid)] = eventsWithParent
 	es.log = append(es.log, eventsWithParent...)
 	done <- uuid
+	close(done)
 }
 
-func (es *EventStore) Find(uuid *UUID) History {
+func (es *EventStore) Find(uuid *UUID) chan History {
+	done := make(chan History)
+	go es.find(uuid, done)
+	return done
+}
+
+func (es *EventStore) find(uuid *UUID, done chan History) {
 	events, ok := es.store[(*uuid)]
 	if !ok {
 		events = make([]Event, 0)
 	}
-	return History{events, len(events)}
+	done <- History{events, len(events)}
+	close(done)
 }
 
 func (es *EventStore) Update(update Update) error {

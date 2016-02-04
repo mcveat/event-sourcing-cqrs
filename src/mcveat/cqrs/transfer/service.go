@@ -39,7 +39,7 @@ func (s *Service) act(cmd Command, done chan *UUID) {
 }
 
 func (s *Service) actionOnTransfer(uuid *UUID, event Event) *UUID {
-	account := s.store.Find(uuid)
+	account := <-s.store.Find(uuid)
 	update := Update{uuid, []Event{event}, account.Version}
 	s.store.Update(update)
 	return uuid
@@ -59,6 +59,11 @@ func (s *Service) handleEvent(e Event) chan *UUID {
 	return nil
 }
 
-func (s *Service) Find(uuid *UUID) Transfer {
-	return Build(s.store.Find(uuid))
+func (s *Service) Find(uuid *UUID) chan Transfer {
+	done := make(chan Transfer)
+	go func() {
+		done <- Build(<-s.store.Find(uuid))
+		close(done)
+	}()
+	return done
 }
