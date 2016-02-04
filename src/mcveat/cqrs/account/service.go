@@ -55,3 +55,7 @@ func (s *Service) handleEvent(e Event) {
 		s.Act(CreditOnTransfer{event.Transaction, event.Amount, event.From, event.To})
 	}
 }
+
+func (s *Service) Find(uuid *UUID) Account {
+	return Build(s.store.Find(uuid))
+}
