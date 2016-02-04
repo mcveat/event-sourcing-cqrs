@@ -21,27 +21,27 @@ func (s *Service) Act(cmd Command) chan *UUID {
 	return done
 }
 
-func (s *Service) act(c Command, done chan *UUID) *UUID {
-	var result *UUID
+func (s *Service) act(c Command, done chan *UUID) {
 	switch v := c.(type) {
 	case OpenAccount:
 		event := AccountOpened{InitialBalance: v.InitialBalance}
-		result = s.store.Save([]Event{event})
+		for result := range s.store.Save([]Event{event}) {
+			done <- result
+		}
 	case Credit:
 		event := AccountCredited{v.Uuid, v.Amount}
-		result = s.actionOnAccount(v.Uuid, event)
+		done <- s.actionOnAccount(v.Uuid, event)
 	case Debit:
 		event := AccountDebited{v.Uuid, v.Amount}
-		result = s.actionOnAccount(v.Uuid, event)
+		done <- s.actionOnAccount(v.Uuid, event)
 	case CreditOnTransfer:
 		event := AccountCreditedOnTransfer{v.To, v.Transaction, v.Amount, v.From, v.To}
-		result = s.actionOnAccount(v.To, event)
+		done <- s.actionOnAccount(v.To, event)
 	case DebitOnTransfer:
 		event := AccountDebitedOnTransfer{v.From, v.Transaction, v.Amount, v.From, v.To}
-		result = s.actionOnAccount(v.From, event)
+		done <- s.actionOnAccount(v.From, event)
 	}
-	done <- result
-	return result
+	close(done)
 }
 
 func (s *Service) actionOnAccount(uuid *UUID, event Event) *UUID {

@@ -32,7 +32,7 @@ func (e GenericEvent) String() string {
 
 func (s *MySuite) TestSaveEventsInStore(c *C) {
 	es := Empty()
-	uuid := es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: -1}})
+	uuid := <-es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: -1}})
 	c.Assert(uuid, NotNil)
 	c.Assert(es.store, HasLen, 1)
 	events := es.store[(*uuid)]
@@ -43,8 +43,8 @@ func (s *MySuite) TestSaveEventsInStore(c *C) {
 
 func (s *MySuite) TestSaveEventsInLog(c *C) {
 	es := Empty()
-	firstUuid := es.Save([]Event{GenericEvent{value: 1}, GenericEvent{value: 2}})
-	secondUuid := es.Save([]Event{GenericEvent{value: 3}, GenericEvent{value: 4}})
+	firstUuid := <-es.Save([]Event{GenericEvent{value: 1}, GenericEvent{value: 2}})
+	secondUuid := <-es.Save([]Event{GenericEvent{value: 3}, GenericEvent{value: 4}})
 	c.Assert(firstUuid, Not(Equals), secondUuid)
 	log := es.log
 	c.Assert(log, HasLen, 4)
@@ -64,7 +64,7 @@ func (s *MySuite) TestFindMissing(c *C) {
 
 func (s *MySuite) TestFind(c *C) {
 	es := Empty()
-	uuid := es.Save([]Event{GenericEvent{value: 42}})
+	uuid := <-es.Save([]Event{GenericEvent{value: 42}})
 	history := es.Find(uuid)
 	c.Assert(history.Events, HasLen, 1)
 	c.Assert(history.Version, Equals, 1)
@@ -80,7 +80,7 @@ func (s *MySuite) TestUpdateNotExisting(c *C) {
 
 func (s *MySuite) TestUpdateOptimisticLockFailed(c *C) {
 	es := Empty()
-	uuid := es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
+	uuid := <-es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
 	update := Update{uuid, []Event{}, 1}
 	err := es.Update(update)
 	c.Assert(err, ErrorMatches, "Optimistic lock failed on update.*")
@@ -88,7 +88,7 @@ func (s *MySuite) TestUpdateOptimisticLockFailed(c *C) {
 
 func (s *MySuite) TestUpdate(c *C) {
 	es := Empty()
-	uuid := es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
+	uuid := <-es.Save([]Event{GenericEvent{value: 42}, GenericEvent{value: 43}})
 	update := Update{uuid, []Event{GenericEvent{value: 44}}, 2}
 	err := es.Update(update)
 	c.Assert(err, IsNil)
@@ -132,7 +132,7 @@ func (s *MySuite) TestEventsOnBoundary(c *C) {
 func storeWithEvents(n int) EventStore {
 	es := Empty()
 	for i := 0; i < n; i++ {
-		es.Save([]Event{GenericEvent{value: i}})
+		<-es.Save([]Event{GenericEvent{value: i}})
 	}
 	return es
 }

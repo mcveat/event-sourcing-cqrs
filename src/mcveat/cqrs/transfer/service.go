@@ -22,19 +22,20 @@ func (s *Service) Act(cmd Command) chan *UUID {
 }
 
 func (s *Service) act(cmd Command, done chan *UUID) {
-	var result *UUID
 	switch v := cmd.(type) {
 	case CreateTransfer:
 		event := TransferCreated{From: v.From, To: v.To, Amount: v.Amount}
-		result = s.store.Save([]Event{event})
+		for result := range s.store.Save([]Event{event}) {
+			done <- result
+		}
 	case Debite:
 		event := TransferDebited{v.Uuid, v.From, v.To, v.Amount}
-		result = s.actionOnTransfer(v.Uuid, event)
+		done <- s.actionOnTransfer(v.Uuid, event)
 	case Complete:
 		event := TransferCredited{v.Uuid, v.From, v.To, v.Amount}
-		result = s.actionOnTransfer(v.Uuid, event)
+		done <- s.actionOnTransfer(v.Uuid, event)
 	}
-	done <- result
+	close(done)
 }
 
 func (s *Service) actionOnTransfer(uuid *UUID, event Event) *UUID {

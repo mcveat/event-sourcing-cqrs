@@ -15,7 +15,13 @@ func Empty() EventStore {
 	return EventStore{make(map[UUID][]Event), make([]Event, 0)}
 }
 
-func (es *EventStore) Save(events []Event) *UUID {
+func (es *EventStore) Save(events []Event) chan *UUID {
+	done := make(chan *UUID)
+	go es.save(events, done)
+	return done
+}
+
+func (es *EventStore) save(events []Event, done chan *UUID) {
 	uuid, err := NewV4()
 	if err != nil {
 		panic(err)
@@ -23,7 +29,7 @@ func (es *EventStore) Save(events []Event) *UUID {
 	eventsWithParent := addUUID(uuid, events)
 	es.store[(*uuid)] = eventsWithParent
 	es.log = append(es.log, eventsWithParent...)
-	return uuid
+	done <- uuid
 }
 
 func (es *EventStore) Find(uuid *UUID) History {
