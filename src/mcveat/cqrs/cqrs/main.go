@@ -34,7 +34,8 @@ func main() {
 	fmt.Println(<-ts.Find(<-transfer))
 	fmt.Println("Events:")
 	fmt.Println("-------")
-	for _, event := range es.Events(0, 100).Events {
+	page := <-es.Events(0, 100)
+	for _, event := range page.Events {
 		fmt.Println(event)
 	}
 }

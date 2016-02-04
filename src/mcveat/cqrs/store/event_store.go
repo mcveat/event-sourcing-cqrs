@@ -55,34 +55,41 @@ func (es *EventStore) Update(update Update) chan error {
 }
 
 func (es *EventStore) update(update Update, done chan error) {
+	defer close(done)
 	stored, ok := es.store[(*update.Uuid)]
 	if !ok {
 		done <- fmt.Errorf("Called update on entity that does not exists: %g", update)
-		close(done)
 		return
 	}
 	if len(stored) != update.Version {
 		done <- fmt.Errorf("Optimistic lock failed on update: %g", update)
-		close(done)
 		return
 	}
 	eventsWithParent := addUUID(update.Uuid, update.Events)
 	es.store[(*update.Uuid)] = append(stored, eventsWithParent...)
 	es.log = append(es.log, eventsWithParent...)
 	done <- nil
-  close(done)
 }
 
-func (es *EventStore) Events(offset int, batchSize int) Page {
+func (es *EventStore) Events(offset int, batchsize int) chan Page {
+	done := make(chan Page)
+	go es.events(offset, batchsize, done)
+	return done
+}
+
+func (es *EventStore) events(offset int, batchSize int, done chan Page) {
+	defer close(done)
 	noOfEvents := len(es.log)
 	if noOfEvents == 0 {
-		return Page{0, make([]Event, 0)}
+		done <- Page{0, make([]Event, 0)}
+		return
 	}
 	if offset < 0 {
 		offset = 0
 	}
 	if offset >= noOfEvents {
-		return Page{offset, make([]Event, 0)}
+		done <- Page{offset, make([]Event, 0)}
+		return
 	}
 	if batchSize <= 0 {
 		batchSize = 10
@@ -92,7 +99,7 @@ func (es *EventStore) Events(offset int, batchSize int) Page {
 		max = noOfEvents
 	}
 	result := es.log[offset:max]
-	return Page{max, result}
+	done <- Page{max, result}
 }
 
 func (es EventStore) String() string {

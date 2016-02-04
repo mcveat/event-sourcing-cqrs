@@ -20,7 +20,8 @@ func (s *MySuite) TestOpenAccount(c *C) {
 	es := store.Empty()
 	as := Service{&es}
 	uuid := <-as.Act(OpenAccount{InitialBalance: 100})
-	c.Assert(es.Events(0, 10).Events, HasLen, 1)
+	page := <-es.Events(0, 10)
+	c.Assert(page.Events, HasLen, 1)
 	history := <-es.Find(uuid)
 	c.Assert(history.Events, HasLen, 1)
 	c.Assert(history.Events[0], Equals, AccountOpened{Uuid: uuid, InitialBalance: 100})
@@ -32,7 +33,8 @@ func (s *MySuite) TestCreditAccount(c *C) {
 	as := Service{&es}
 	uuid := <-as.Act(OpenAccount{InitialBalance: 100})
 	<-as.Act(Credit{uuid, 200})
-	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+	page := <-es.Events(0, 10)
+	c.Assert(page.Events, HasLen, 2)
 	history := <-es.Find(uuid)
 	c.Assert(history.Events, HasLen, 2)
 	c.Assert(history.Events[0], Equals, AccountOpened{Uuid: uuid, InitialBalance: 100})
@@ -45,7 +47,8 @@ func (s *MySuite) TestDebitAccount(c *C) {
 	as := Service{&es}
 	uuid := <-as.Act(OpenAccount{InitialBalance: 100})
 	<-as.Act(Debit{uuid, 50})
-	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+	page := <-es.Events(0, 10)
+	c.Assert(page.Events, HasLen, 2)
 	history := <-es.Find(uuid)
 	c.Assert(history.Events, HasLen, 2)
 	c.Assert(history.Events[0], Equals, AccountOpened{Uuid: uuid, InitialBalance: 100})
@@ -60,7 +63,8 @@ func (s *MySuite) TestCreditAccountOnTransfer(c *C) {
 	transaction, _ := NewV4()
 	otherAccount, _ := NewV4()
 	<-as.Act(CreditOnTransfer{transaction, 200, otherAccount, uuid})
-	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+	page := <-es.Events(0, 10)
+	c.Assert(page.Events, HasLen, 2)
 	history := <-es.Find(uuid)
 	c.Assert(history.Events, HasLen, 2)
 	c.Assert(history.Events[0], Equals, AccountOpened{Uuid: uuid, InitialBalance: 100})
@@ -75,7 +79,8 @@ func (s *MySuite) TestDebitAccountOnTransfer(c *C) {
 	transaction, _ := NewV4()
 	otherAccount, _ := NewV4()
 	<-as.Act(DebitOnTransfer{transaction, 50, uuid, otherAccount})
-	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+	page := <-es.Events(0, 10)
+	c.Assert(page.Events, HasLen, 2)
 	history := <-es.Find(uuid)
 	c.Assert(history.Events, HasLen, 2)
 	c.Assert(history.Events[0], Equals, AccountOpened{Uuid: uuid, InitialBalance: 100})
@@ -91,7 +96,8 @@ func (s *MySuite) TestHandleTransferCreatedEvent(c *C) {
 	transaction, _ := NewV4()
 
 	<-as.handleEvent(TransferCreated{transaction, thisAccount, otherAccount, 50})
-	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+	page := <-es.Events(0, 10)
+	c.Assert(page.Events, HasLen, 2)
 
 	history := <-es.Find(thisAccount)
 	c.Assert(history.Events, HasLen, 2)
@@ -107,7 +113,8 @@ func (s *MySuite) TestHandleAccountDebitedOnTransferEvent(c *C) {
 	transaction, _ := NewV4()
 
 	<-as.handleEvent(AccountDebitedOnTransfer{otherAccount, transaction, 50, otherAccount, thisAccount})
-	c.Assert(es.Events(0, 10).Events, HasLen, 2)
+	page := <-es.Events(0, 10)
+	c.Assert(page.Events, HasLen, 2)
 
 	history := <-es.Find(thisAccount)
 	c.Assert(history.Events, HasLen, 2)

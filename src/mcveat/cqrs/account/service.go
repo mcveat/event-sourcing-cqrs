@@ -69,6 +69,7 @@ func (s *Service) Find(uuid *UUID) chan Account {
 	done := make(chan Account)
 	go func() {
 		done <- Build(<-s.store.Find(uuid))
+		close(done)
 	}()
 	return done
 }

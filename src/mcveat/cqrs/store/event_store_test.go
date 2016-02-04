@@ -98,33 +98,33 @@ func (s *MySuite) TestUpdate(c *C) {
 
 func (s *MySuite) TestEventsOnEmptySet(c *C) {
 	es := Empty()
-	page := es.Events(0, 20)
+	page := <-es.Events(0, 20)
 	c.Assert(page.Offset, Equals, 0)
 	c.Assert(page.Events, HasLen, 0)
 }
 
 func (s *MySuite) TestEventsBadOffset(c *C) {
 	es := storeWithEvents(50)
-	page := es.Events(-5, 20)
+	page := <-es.Events(-5, 20)
 	c.Assert(page.Offset, Equals, 20)
 }
 
 func (s *MySuite) TestEventsBadBatchSize(c *C) {
 	es := storeWithEvents(50)
-	page := es.Events(0, -20)
+	page := <-es.Events(0, -20)
 	c.Assert(page.Offset, Equals, 10)
 }
 
 func (s *MySuite) TestEvents(c *C) {
 	es := storeWithEvents(50)
-	page := es.Events(10, 10)
+	page := <-es.Events(10, 10)
 	c.Assert(page.Offset, Equals, 20)
 	c.Assert(page.Events, HasLen, 10)
 }
 
 func (s *MySuite) TestEventsOnBoundary(c *C) {
 	es := storeWithEvents(15)
-	page := es.Events(10, 10)
+	page := <-es.Events(10, 10)
 	c.Assert(page.Offset, Equals, 15)
 	c.Assert(page.Events, HasLen, 5)
 }
