@@ -2,9 +2,9 @@ package account
 
 import (
 	. "github.com/nu7hatch/gouuid"
+	"mcveat/cqrs/listener"
 	. "mcveat/cqrs/store"
 	"mcveat/cqrs/transfer"
-	"time"
 )
 
 type Service struct {
@@ -44,23 +44,7 @@ func (s *Service) actionOnAccount(uuid *UUID, event Event) *UUID {
 }
 
 func (s *Service) StartListener() {
-	go s.listen()
-}
-
-func (s *Service) listen() {
-	offset := 0
-	for {
-		time.Sleep(100 * time.Millisecond)
-		page := s.store.Events(offset, 5)
-		go s.handleEvents(page.Events)
-		offset = page.Offset
-	}
-}
-
-func (s *Service) handleEvents(events []Event) {
-	for _, event := range events {
-		s.handleEvent(event)
-	}
+	go listener.Listen(s.store, s.handleEvent)
 }
 
 func (s *Service) handleEvent(e Event) {
