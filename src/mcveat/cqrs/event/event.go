@@ -16,7 +16,7 @@ type AccountOpened struct {
 }
 
 func (e AccountOpened) String() string {
-	return fmt.Sprint("{AccountOpened: initialBalance=", e.InitialBalance, "}")
+	return fmt.Sprint("{AccountOpened: uuid=", e.Uuid, " initialBalance=", e.InitialBalance, "}")
 }
 
 func (e AccountOpened) SetUUID(uuid *UUID) Event {
@@ -30,7 +30,7 @@ type AccountCredited struct {
 }
 
 func (e AccountCredited) String() string {
-	return fmt.Sprint("{AccountCredited: amount=", e.Amount, "}")
+	return fmt.Sprint("{AccountCredited: uuid=", e.Uuid, " amount=", e.Amount, "}")
 }
 
 func (e AccountCredited) SetUUID(uuid *UUID) Event {
@@ -44,7 +44,7 @@ type AccountDebited struct {
 }
 
 func (e AccountDebited) String() string {
-	return fmt.Sprint("{AccountDebited: amount=", e.Amount, "}")
+	return fmt.Sprint("{AccountDebited: uuid=", e.Uuid, " amount=", e.Amount, "}")
 }
 
 func (e AccountDebited) SetUUID(uuid *UUID) Event {
@@ -118,18 +118,18 @@ func (e TransferDebited) SetUUID(uuid *UUID) Event {
 	return e
 }
 
-type TransferCompleted struct {
+type TransferCredited struct {
 	Uuid   *UUID
 	From   *UUID
 	To     *UUID
 	Amount int
 }
 
-func (e TransferCompleted) String() string {
-	return fmt.Sprint("{TransferCompleted: from=", e.From, " to=", e.To, " amount=", e.Amount, "}")
+func (e TransferCredited) String() string {
+	return fmt.Sprint("{TransferCredited: from=", e.From, " to=", e.To, " amount=", e.Amount, "}")
 }
 
-func (e TransferCompleted) SetUUID(uuid *UUID) Event {
+func (e TransferCredited) SetUUID(uuid *UUID) Event {
 	e.Uuid = uuid
 	return e
 }

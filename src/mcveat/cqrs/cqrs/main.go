@@ -21,12 +21,20 @@ func main() {
 
 	as.Act(account.Credit{Uuid: firstAccount, Amount: 300})
 	as.Act(account.Debit{Uuid: firstAccount, Amount: 50})
-	ts.Act(transfer.CreateTransfer{firstAccount, secondAccount, 125})
+	transfer := ts.Act(transfer.CreateTransfer{firstAccount, secondAccount, 125})
 
 	time.Sleep(1000 * time.Millisecond)
 
 	fmt.Println("Accounts:")
+	fmt.Println("---------")
 	fmt.Println(as.Find(firstAccount))
 	fmt.Println(as.Find(secondAccount))
-	fmt.Println(es)
+	fmt.Println("Transfers:")
+	fmt.Println("----------")
+	fmt.Println(ts.Find(transfer))
+	fmt.Println("Events:")
+	fmt.Println("-------")
+	for _, event := range es.Events(0, 100).Events {
+		fmt.Println(event)
+	}
 }

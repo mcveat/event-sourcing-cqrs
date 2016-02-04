@@ -29,7 +29,7 @@ func (s *MySuite) TestCreateTransfer(c *C) {
 	c.Assert(history.Version, Equals, 1)
 }
 
-func (s *MySuite) TestDebitAndCompleteTransfer(c *C) {
+func (s *MySuite) TestDebitAndCreditTransfer(c *C) {
 	es := store.Empty()
 	ts := Service{&es}
 	from, _ := NewV4()
@@ -42,7 +42,7 @@ func (s *MySuite) TestDebitAndCompleteTransfer(c *C) {
 	c.Assert(history.Events, HasLen, 3)
 	c.Assert(history.Events[0], Equals, TransferCreated{uuid, from, to, 100})
 	c.Assert(history.Events[1], Equals, TransferDebited{uuid, from, to, 100})
-	c.Assert(history.Events[2], Equals, TransferCompleted{uuid, from, to, 100})
+	c.Assert(history.Events[2], Equals, TransferCredited{uuid, from, to, 100})
 	c.Assert(history.Version, Equals, 3)
 }
 
@@ -78,6 +78,6 @@ func (s *MySuite) TestHandleAccountDebitedAndCreditedOnTransferEvent(c *C) {
 	c.Assert(history.Events, HasLen, 3)
 	c.Assert(history.Events[0], Equals, TransferCreated{uuid, from, to, 100})
 	c.Assert(history.Events[1], Equals, TransferDebited{uuid, from, to, 100})
-	c.Assert(history.Events[2], Equals, TransferCompleted{uuid, from, to, 100})
+	c.Assert(history.Events[2], Equals, TransferCredited{uuid, from, to, 100})
 	c.Assert(history.Version, Equals, 3)
 }

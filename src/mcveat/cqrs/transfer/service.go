@@ -24,7 +24,7 @@ func (s *Service) Act(cmd Command) *UUID {
 		event := TransferDebited{v.Uuid, v.From, v.To, v.Amount}
 		return s.actionOnTransfer(v.Uuid, event)
 	case Complete:
-		event := TransferCompleted{v.Uuid, v.From, v.To, v.Amount}
+		event := TransferCredited{v.Uuid, v.From, v.To, v.Amount}
 		return s.actionOnTransfer(v.Uuid, event)
 	}
 	return nil
@@ -48,4 +48,8 @@ func (s *Service) handleEvent(e Event) {
 	case AccountCreditedOnTransfer:
 		s.Act(Complete{event.Transaction, event.From, event.To, event.Amount})
 	}
+}
+
+func (s *Service) Find(uuid *UUID) Transfer {
+	return Build(s.store.Find(uuid))
 }
