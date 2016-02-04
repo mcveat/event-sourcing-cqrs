@@ -45,5 +45,7 @@ func (s *Service) handleEvent(e Event) {
 	switch event := e.(type) {
 	case AccountDebitedOnTransfer:
 		s.Act(Debite{event.Transaction, event.From, event.To, event.Amount})
+	case AccountCreditedOnTransfer:
+		s.Act(Complete{event.Transaction, event.From, event.To, event.Amount})
 	}
 }
