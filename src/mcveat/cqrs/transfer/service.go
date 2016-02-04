@@ -1,6 +1,7 @@
 package transfer
 
 import (
+	"fmt"
 	. "github.com/nu7hatch/gouuid"
 	. "mcveat/cqrs/event"
 	"mcveat/cqrs/listener"
@@ -41,7 +42,10 @@ func (s *Service) act(cmd Command, done chan *UUID) {
 func (s *Service) actionOnTransfer(uuid *UUID, event Event) *UUID {
 	account := <-s.store.Find(uuid)
 	update := Update{uuid, []Event{event}, account.Version}
-	<-s.store.Update(update)
+	err := <-s.store.Update(update)
+	if err != nil {
+		fmt.Println("Update on transfer failed", err)
+	}
 	return uuid
 }
 

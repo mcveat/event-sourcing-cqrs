@@ -4,15 +4,17 @@ import (
 	"fmt"
 	. "github.com/nu7hatch/gouuid"
 	. "mcveat/cqrs/event"
+	"sync"
 )
 
 type EventStore struct {
 	store map[UUID][]Event
 	log   []Event
+	mux   sync.Mutex
 }
 
 func Empty() EventStore {
-	return EventStore{make(map[UUID][]Event), make([]Event, 0)}
+	return EventStore{store: make(map[UUID][]Event), log: make([]Event, 0)}
 }
 
 func (es *EventStore) Save(events []Event) chan *UUID {
@@ -27,8 +29,10 @@ func (es *EventStore) save(events []Event, done chan *UUID) {
 		panic(err)
 	}
 	eventsWithParent := addUUID(uuid, events)
-	es.store[(*uuid)] = eventsWithParent
-	es.log = append(es.log, eventsWithParent...)
+	es.synchronous(func() {
+		es.store[(*uuid)] = eventsWithParent
+		es.log = append(es.log, eventsWithParent...)
+	})
 	done <- uuid
 	close(done)
 }
@@ -58,17 +62,25 @@ func (es *EventStore) update(update Update, done chan error) {
 	defer close(done)
 	stored, ok := es.store[(*update.Uuid)]
 	if !ok {
-		done <- fmt.Errorf("Called update on entity that does not exists: %g", update)
+		done <- fmt.Errorf("Called update on entity that does not exists:", update)
 		return
 	}
 	if len(stored) != update.Version {
-		done <- fmt.Errorf("Optimistic lock failed on update: %g", update)
+		done <- fmt.Errorf("Optimistic lock failed on update:", update)
 		return
 	}
 	eventsWithParent := addUUID(update.Uuid, update.Events)
-	es.store[(*update.Uuid)] = append(stored, eventsWithParent...)
-	es.log = append(es.log, eventsWithParent...)
+	es.synchronous(func() {
+		es.store[(*update.Uuid)] = append(stored, eventsWithParent...)
+		es.log = append(es.log, eventsWithParent...)
+	})
 	done <- nil
+}
+
+func (es *EventStore) synchronous(f func()) {
+	es.mux.Lock()
+	f()
+	es.mux.Unlock()
 }
 
 func (es *EventStore) Events(offset int, batchsize int) chan Page {

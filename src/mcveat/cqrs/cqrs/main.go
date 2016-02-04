@@ -20,7 +20,6 @@ func main() {
 	secondAccount := <-as.Act(account.OpenAccount{InitialBalance: 0})
 
 	as.Act(account.Credit{Uuid: firstAccount, Amount: 300})
-	as.Act(account.Debit{Uuid: firstAccount, Amount: 50})
 	transfer := ts.Act(transfer.CreateTransfer{firstAccount, secondAccount, 125})
 
 	time.Sleep(1000 * time.Millisecond)

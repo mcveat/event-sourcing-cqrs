@@ -1,6 +1,7 @@
 package account
 
 import (
+	"fmt"
 	. "github.com/nu7hatch/gouuid"
 	. "mcveat/cqrs/event"
 	"mcveat/cqrs/listener"
@@ -47,7 +48,10 @@ func (s *Service) act(c Command, done chan *UUID) {
 func (s *Service) actionOnAccount(uuid *UUID, event Event) *UUID {
 	account := <-s.store.Find(uuid)
 	update := Update{uuid, []Event{event}, account.Version}
-	<-s.store.Update(update)
+	err := <-s.store.Update(update)
+	if err != nil {
+		fmt.Println("Update on account failed", err)
+	}
 	return uuid
 }
 
