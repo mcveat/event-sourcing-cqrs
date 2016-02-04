@@ -21,7 +21,7 @@ func (s *MySuite) TestCreateTransfer(c *C) {
 	ts := Service{&es}
 	from, _ := NewV4()
 	to, _ := NewV4()
-	uuid := ts.Act(CreateTransfer{from, to, 100})
+	uuid := <-ts.Act(CreateTransfer{from, to, 100})
 	c.Assert(es.Events(0, 10).Events, HasLen, 1)
 	history := es.Find(uuid)
 	c.Assert(history.Events, HasLen, 1)
@@ -34,9 +34,9 @@ func (s *MySuite) TestDebitAndCreditTransfer(c *C) {
 	ts := Service{&es}
 	from, _ := NewV4()
 	to, _ := NewV4()
-	uuid := ts.Act(CreateTransfer{from, to, 100})
-	ts.Act(Debite{uuid, from, to, 100})
-	ts.Act(Complete{uuid, from, to, 100})
+	uuid := <-ts.Act(CreateTransfer{from, to, 100})
+	<-ts.Act(Debite{uuid, from, to, 100})
+	<-ts.Act(Complete{uuid, from, to, 100})
 	c.Assert(es.Events(0, 10).Events, HasLen, 3)
 	history := es.Find(uuid)
 	c.Assert(history.Events, HasLen, 3)
@@ -52,8 +52,8 @@ func (s *MySuite) TestHandleAccountDebitedOnTransferEvent(c *C) {
 	from, _ := NewV4()
 	to, _ := NewV4()
 
-	uuid := ts.Act(CreateTransfer{from, to, 100})
-	ts.handleEvent(AccountDebitedOnTransfer{from, uuid, 100, from, to})
+	uuid := <-ts.Act(CreateTransfer{from, to, 100})
+	<-ts.handleEvent(AccountDebitedOnTransfer{from, uuid, 100, from, to})
 
 	c.Assert(es.Events(0, 10).Events, HasLen, 2)
 	history := es.Find(uuid)
@@ -69,9 +69,9 @@ func (s *MySuite) TestHandleAccountDebitedAndCreditedOnTransferEvent(c *C) {
 	from, _ := NewV4()
 	to, _ := NewV4()
 
-	uuid := ts.Act(CreateTransfer{from, to, 100})
-	ts.handleEvent(AccountDebitedOnTransfer{from, uuid, 100, from, to})
-	ts.handleEvent(AccountCreditedOnTransfer{from, uuid, 100, from, to})
+	uuid := <-ts.Act(CreateTransfer{from, to, 100})
+	<-ts.handleEvent(AccountDebitedOnTransfer{from, uuid, 100, from, to})
+	<-ts.handleEvent(AccountCreditedOnTransfer{from, uuid, 100, from, to})
 
 	c.Assert(es.Events(0, 10).Events, HasLen, 3)
 	history := es.Find(uuid)
