@@ -54,7 +54,9 @@ func (es *EventStore) find(uuid *UUID, done chan History) {
 
 func (es *EventStore) Update(update Update) chan error {
 	done := make(chan error)
-	go es.update(update, done)
+	go es.synchronous(func() {
+		es.update(update, done)
+	})
 	return done
 }
 
@@ -70,10 +72,8 @@ func (es *EventStore) update(update Update, done chan error) {
 		return
 	}
 	eventsWithParent := addUUID(update.Uuid, update.Events)
-	es.synchronous(func() {
-		es.store[(*update.Uuid)] = append(stored, eventsWithParent...)
-		es.log = append(es.log, eventsWithParent...)
-	})
+	es.store[(*update.Uuid)] = append(stored, eventsWithParent...)
+	es.log = append(es.log, eventsWithParent...)
 	done <- nil
 }
 
